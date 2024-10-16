@@ -11,3 +11,5 @@ DB_CONFIG = {
     'database': os.getenv('DB_NAME', 'proteins_db'),
     'allow_local_infile': True
 }
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
