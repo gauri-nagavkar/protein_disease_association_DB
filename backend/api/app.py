@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from backend.db.db_setup import create_db_connection, create_database
 from backend.db.models import CREATE_PROTEIN_ASSOCIATIONS_TABLE, CREATE_AGGREGATE_ASSOCIATIONS_TABLE
+from services.llm_service import analyze_paper
 
 app = Flask(__name__)
 
@@ -88,6 +89,47 @@ def get_associations_by_disease(disease_name):
         return jsonify(records), 200
     else:
         return jsonify({"error": "Failed to connect to database"}), 500
+    
+
+# Route to analyze research papers and extract protein-disease associations
+@app.route("/analyze_paper", methods=["POST"])
+def analyze_paper_route():
+    data = request.json
+
+    # The request must contain the text of the research paper
+    paper_text = data.get("paper_text")
+    if not paper_text:
+        return jsonify({"error": "Missing paper text"}), 400
+
+    # Analyze the paper with the LLM
+    result = analyze_paper(paper_text)
+
+    if result:
+        connection = create_db_connection()
+        if connection:
+            cursor = connection.cursor()
+
+            # Insert each protein-disease association into the database
+            for association in result:
+                insert_query = """
+                    INSERT INTO ProteinAssociations 
+                    (protein_name, disease_name, association_type, publication, citation_count, author_list, publication_date)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(insert_query, (
+                    association['protein'], association['disease'], association['association'],
+                    data.get("publication"), data.get("citation_count"),
+                    data.get("author_list"), data.get("publication_date")
+                ))
+
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return jsonify({"message": "Paper analyzed and data inserted successfully"}), 201
+        else:
+            return jsonify({"error": "Database connection failed"}), 500
+    else:
+        return jsonify({"error": "Failed to analyze paper"}), 500
 
 # Print all registered routes
 print(app.url_map)
