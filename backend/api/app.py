@@ -131,6 +131,81 @@ def analyze_paper_route():
     else:
         return jsonify({"error": "Failed to analyze paper"}), 500
 
+# Query associations by protein name
+@app.route("/query_by_protein/<protein_name>", methods=["GET"])
+def query_by_protein(protein_name):
+    connection = create_db_connection()
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT * FROM ProteinAssociations WHERE protein_name = %s"
+        cursor.execute(query, (protein_name,))
+        records = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return jsonify(records), 200
+    else:
+        return jsonify({"error": "Database connection failed"}), 500
+
+# Query associations by disease name
+@app.route("/query_by_disease/<disease_name>", methods=["GET"])
+def query_by_disease(disease_name):
+    connection = create_db_connection()
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT * FROM ProteinAssociations WHERE disease_name = %s"
+        cursor.execute(query, (disease_name,))
+        records = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return jsonify(records), 200
+    else:
+        return jsonify({"error": "Database connection failed"}), 500
+
+# Query associations by association type (Positive, Negative, or Neutral)
+@app.route("/query_by_association/<association_type>", methods=["GET"])
+def query_by_association(association_type):
+    connection = create_db_connection()
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT * FROM ProteinAssociations WHERE association_type = %s"
+        cursor.execute(query, (association_type,))
+        records = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return jsonify(records), 200
+    else:
+        return jsonify({"error": "Database connection failed"}), 500
+
+# Query with multiple filters (Protein, Disease, and Association)
+@app.route("/query_with_filters", methods=["GET"])
+def query_with_filters():
+    protein_name = request.args.get("protein_name")
+    disease_name = request.args.get("disease_name")
+    association_type = request.args.get("association_type")
+    
+    connection = create_db_connection()
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT * FROM ProteinAssociations WHERE 1=1"
+        
+        # Add conditions based on provided filters
+        if protein_name:
+            query += " AND protein_name = %s"
+        if disease_name:
+            query += " AND disease_name = %s"
+        if association_type:
+            query += " AND association_type = %s"
+        
+        params = [p for p in (protein_name, disease_name, association_type) if p]
+        cursor.execute(query, params)
+        records = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return jsonify(records), 200
+    else:
+        return jsonify({"error": "Database connection failed"}), 500
+
+
 # Print all registered routes
 print(app.url_map)
 
