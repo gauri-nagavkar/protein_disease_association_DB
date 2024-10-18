@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Results</h1>
+        {% if results %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Protein Name</th>
+                        <th>Disease Name</th>
+                        <th>Association Type</th>
+                        <th>Publication</th>
+                        <th>Citation Count</th>
+                        <th>Author List</th>
+                        <th>Publication Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in results %}
+                        <tr>
+                            <td>{{ record.protein_name }}</td>
+                            <td>{{ record.disease_name }}</td>
+                            <td>{{ record.association_type }}</td>
+                            <td>{{ record.publication }}</td>
+                            <td>{{ record.citation_count }}</td>
+                            <td>{{ record.author_list }}</td>
+                            <td>{{ record.publication_date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No results found for your query.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

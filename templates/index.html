@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protein-Disease Association Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Protein-Disease Associations</h1>
+        <form action="/search" method="GET">
+            <label for="protein_name">Protein Name:</label>
+            <input type="text" id="protein_name" name="protein_name">
+
+            <label for="disease_name">Disease Name:</label>
+            <input type="text" id="disease_name" name="disease_name">
+
+            <label for="association_type">Association Type:</label>
+            <select id="association_type" name="association_type">
+                <option value="">Any</option>
+                <option value="Positive">Positive</option>
+                <option value="Negative">Negative</option>
+                <option value="Neutral">Neutral</option>
+            </select>
+
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</body>
+</html>
