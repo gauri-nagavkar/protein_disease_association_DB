@@ -1,9 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 from backend.db.db_setup import create_db_connection, create_database
 from backend.db.models import CREATE_PROTEIN_ASSOCIATIONS_TABLE, CREATE_AGGREGATE_ASSOCIATIONS_TABLE
 from services.llm_service import analyze_paper
 
-app = Flask(__name__)
+import os
+
+# Define the absolute paths for templates and static folders
+template_dir = os.path.abspath("./templates")
+static_dir = os.path.abspath("./static")
+
+# Initialize the Flask app with the defined template and static directories
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+
+# app = Flask(__name__)
 
 # Initialize the database and create tables
 def initialize_db():
@@ -21,7 +30,7 @@ def initialize_db():
 
 @app.route("/")
 def index():
-    return "Protein Associations API is running!"
+    return render_template("index.html")
 
 # Route to insert new protein association record
 @app.route("/add_association", methods=["POST"])
@@ -204,7 +213,40 @@ def query_with_filters():
         return jsonify(records), 200
     else:
         return jsonify({"error": "Database connection failed"}), 500
+    
+# Route to handle search requests
+@app.route("/search", methods=["GET"])
+def search():
+    protein_name = request.args.get("protein_name")
+    disease_name = request.args.get("disease_name")
+    association_type = request.args.get("association_type")
+    
+    connection = create_db_connection()
+    if connection:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT * FROM ProteinAssociations WHERE 1=1"
+        
+        # Add conditions based on provided filters
+        params = []
+        if protein_name:
+            query += " AND protein_name = %s"
+            params.append(protein_name)
+        if disease_name:
+            query += " AND disease_name = %s"
+            params.append(disease_name)
+        if association_type:
+            query += " AND association_type = %s"
+            params.append(association_type)
+        
+        cursor.execute(query, params)
+        records = cursor.fetchall()
+        cursor.close()
+        connection.close()
 
+        # Render results.html with the records
+        return render_template("results.html", results=records)
+    else:
+        return jsonify({"error": "Database connection failed"}), 500
 
 # Print all registered routes
 print(app.url_map)
