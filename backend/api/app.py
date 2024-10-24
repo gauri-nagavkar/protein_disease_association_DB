@@ -3,7 +3,16 @@ from backend.db.db_setup import create_db_connection, create_database
 from backend.db.models import CREATE_PROTEIN_ASSOCIATIONS_TABLE, CREATE_AGGREGATE_ASSOCIATIONS_TABLE
 from services.llm_service import analyze_paper
 
-app = Flask(__name__)
+import os
+
+# Define the absolute paths for templates and static folders
+template_dir = os.path.abspath("./templates")
+static_dir = os.path.abspath("./static")
+
+# Initialize the Flask app with the defined template and static directories
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+
+# app = Flask(__name__)
 
 # Initialize the database and create tables
 def initialize_db():
@@ -238,8 +247,6 @@ def search():
         return render_template("results.html", results=records)
     else:
         return jsonify({"error": "Database connection failed"}), 500
-
-
 
 # Print all registered routes
 print(app.url_map)
